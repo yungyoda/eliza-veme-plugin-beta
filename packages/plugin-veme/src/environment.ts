@@ -1,29 +1,35 @@
 import { IAgentRuntime } from "@elizaos/core";
 import { z } from "zod";
 
-export const nasaEnvSchema = z.object({
-    NASA_API_KEY: z.string().min(1, "Nasa API key is required"),
+export const vemeEnvSchema = z.object({
+    VEME_API_KEY: z.string().min(1, "Veme API key is required"),
+    AWS_ACCESS_KEY_ID: z.string().min(1, "AWS Access Key ID is required"),
+    AWS_PRIVATE_KEY: z.string().min(1, "AWS Private Key is required"),
+    BASE_URL: z.string().min(1, "Base URL is required"),
+    ENCODED_CREDENTIALS: z.string().min(1, "Encoded credentials are required"),
 });
 
-export type nasaConfig = z.infer<typeof nasaEnvSchema>;
+export type VemeConfig = z.infer<typeof vemeEnvSchema>;
 
-export async function validateNasaConfig(
+export async function validateVemeConfig(
     runtime: IAgentRuntime
-): Promise<nasaConfig> {
+): Promise<VemeConfig> {
     try {
         const config = {
-            NASA_API_KEY: runtime.getSetting("NASA_API_KEY"),
+            VEME_API_KEY: runtime.getSetting("VEME_API_KEY"),
+            AWS_ACCESS_KEY_ID: runtime.getSetting("AWS_ACCESS_KEY_ID"),
+            AWS_PRIVATE_KEY: runtime.getSetting("AWS_PRIVATE_KEY"),
+            BASE_URL: runtime.getSetting("BASE_URL"),
+            ENCODED_CREDENTIALS: runtime.getSetting("ENCODED_CREDENTIALS"),
         };
-        console.log('config: ', config)
-        return nasaEnvSchema.parse(config);
+        return vemeEnvSchema.parse(config);
     } catch (error) {
-        console.log("error::::", error)
         if (error instanceof z.ZodError) {
             const errorMessages = error.errors
                 .map((err) => `${err.path.join(".")}: ${err.message}`)
                 .join("\n");
             throw new Error(
-                `Nasa API configuration validation failed:\n${errorMessages}`
+                `Veme API configuration validation failed:\n${errorMessages}`
             );
         }
         throw error;

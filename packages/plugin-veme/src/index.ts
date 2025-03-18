@@ -1,15 +1,19 @@
-import { Plugin } from "@elizaos/core";
-import { getAPODAction } from "./actions/getAPOD";
-import { getMarsRoverAction } from "./actions/getMarsRoverPhoto";
+import { IAgentRuntime } from "@elizaos/core";
+import { validateVemeConfig } from "./environment";
+import { createVemeService } from "./services";
+import { vemeExamples } from "./examples";
+import { createVemeActions } from "./actions";
 
-export const nasaPlugin: Plugin = {
-    name: "nasa",
-    description: "NASA plugin for Eliza",
-    actions: [getAPODAction, getMarsRoverAction],
-    // evaluators analyze the situations and actions taken by the agent. they run after each agent action
-    // allowing the agent to reflect on what happened and potentially trigger additional actions or modifications
-    evaluators: [],
-    // providers supply information and state to the agent's context, help agent access necessary data
-    providers: [],
-};
-export default nasaPlugin;
+export async function initializeVemePlugin(runtime: IAgentRuntime) {
+    const config = await validateVemeConfig(runtime);
+    const vemeService = createVemeService(config);
+
+    // Register all actions
+    const actions = createVemeActions(vemeService);
+    actions.forEach(action => runtime.registerAction(action));
+
+    return {
+        examples: vemeExamples,
+        service: vemeService
+    };
+}

@@ -1,36 +1,25 @@
 {
-    "name": "@elizaos/plugin-nasa",
-    "version": "0.1.8+build.1",
-    "type": "module",
+    "name": "@elizaos/plugin-veme",
+    "version": "0.0.1",
+    "description": "Veme plugin for Eliza",
     "main": "dist/index.js",
-    "module": "dist/index.js",
     "types": "dist/index.d.ts",
-    "exports": {
-        "./package.json": "./package.json",
-        ".": {
-            "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
-            }
-        }
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "lint": "eslint src --ext .ts",
+        "clean": "rimraf dist"
     },
-    "files": [
-        "dist"
-    ],
     "dependencies": {
+        "@aws-sdk/cloudfront-signer": "^3.0.0",
         "@elizaos/core": "workspace:*",
-        "tsup": "8.3.5",
         "zod": "^3.22.4"
     },
-    "scripts": {
-        "build": "tsup --format esm --dts",
-        "dev": "tsup --format esm --dts --watch",
-        "lint": "eslint --fix  --cache ."
-    },
-    "peerDependencies": {
-        "whatwg-url": "7.1.0"
-    },
     "devDependencies": {
-        "@types/node": "^20.0.0"
+        "@types/node": "^20.11.19",
+        "eslint": "^8.56.0",
+        "rimraf": "^5.0.5",
+        "tsup": "^8.0.2",
+        "typescript": "^5.3.3"
     }
 }

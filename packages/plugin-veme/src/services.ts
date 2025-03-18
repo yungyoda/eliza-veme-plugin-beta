@@ -1,107 +1,104 @@
-import {
-    APODResponse,
-    MarsRoverDataResponse
-} from "./types";
+import { getSignedUrl as awsGetSignedUrl } from "@aws-sdk/cloudfront-signer";
+import { VemeConfig } from "./environment";
+import { VemeResponse, LoginResponse, VemeService } from "./types";
 
-const BASE_URL = "https://api.nasa.gov/planetary/apod\?api_key\=";
+export const createVemeService = (config: VemeConfig): VemeService => {
+    const getSignedUrl = (url: string): string => {
+        return awsGetSignedUrl({
+            url,
+            keyPairId: config.AWS_ACCESS_KEY_ID,
+            privateKey: config.AWS_PRIVATE_KEY,
+            dateLessThan: new Date(
+                (Math.floor(Date.now() / 1000) + 60 * 60 * 24) * 1000
+            ).toISOString(),
+        });
+    };
 
-export const createNASAService = (apiKey: string) => {
-    const getAPOD = async (): Promise<APODResponse> => {
-        if (!apiKey) {
-            throw new Error("Invalid parameters");
-        }
-
+    const login = async (): Promise<LoginResponse> => {
         try {
-            const url = BASE_URL + apiKey
-            const response = await fetch(url);
+            const urlData = new URLSearchParams();
+            urlData.append("email_id", "dev@veme.com");
+            urlData.append("wallet_address", "0x0000000000000000000000000000000000000000");
+
+            const response = await fetch(`${config.BASE_URL}/user/signup`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Basic ${config.ENCODED_CREDENTIALS}`,
+                    "Api-Key": config.VEME_API_KEY,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: urlData.toString(),
+            });
+
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error?.message || response.statusText);
+                const errorData = await response.text();
+                throw new Error(`Failed to login: ${response.status} ${errorData}`);
             }
 
-            const data = await response.json();
-            return data;
-        } catch (error: any) {
-            console.error("NASA API Error:", error.message);
+            return await response.json();
+        } catch (error) {
+            console.error("Error logging in:", error);
             throw error;
         }
     };
 
-    const getMarsRoverPhoto = async (): Promise<MarsRoverDataResponse> => {
+    const createCaptionVeme = async (
+        userPrompt: string,
+        emotion?: string
+    ): Promise<VemeResponse> => {
         try {
-            const data = await fetchMarsPhotos(apiKey)
-            return data
-        } catch (error: any) {
-            console.error("NASA Mars Rover API Error:", error.message);
+            const loginResponse = await login();
+            const { user_id, "access-token": accessToken } = loginResponse.result;
+
+            const urlData = new URLSearchParams();
+            urlData.append("user_id", user_id);
+            urlData.append("user_prompt", userPrompt);
+            if (emotion) {
+                urlData.append("emotion", emotion);
+            }
+
+            const response = await fetch(
+                `${config.BASE_URL}/home/create-caption-veme`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Basic ${config.ENCODED_CREDENTIALS}`,
+                        "Api-Key": config.VEME_API_KEY,
+                        "Access-Token": accessToken,
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: urlData.toString(),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(
+                    `Failed to create caption veme: ${response.status} ${errorData}`
+                );
+            }
+
+            const data = await response.json();
+
+            // Sign URLs for each veme in the result array
+            if (data.result && Array.isArray(data.result)) {
+                for (const veme of data.result) {
+                    if (veme.veme_url) {
+                        veme.veme_link = getSignedUrl(veme.veme_url);
+                    }
+                }
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Error creating caption veme:", error);
             throw error;
         }
-    }
+    };
 
-    return { getAPOD, getMarsRoverPhoto };
+    return {
+        login,
+        createCaptionVeme,
+        getSignedUrl,
+    };
 };
-
-async function fetchMarsPhotos(apiKey, attempts = 0, maxAttempts = 10) {
-    try {
-        const curiosityCameras = [
-            'FHAZ',
-            'RHAZ',
-            'MAST',
-            'CHEMCAM',
-            'MAHLI',
-            'MARDI',
-            'NAVCAM'
-        ]
-        const opportunityCameras = [
-            'FHAZ',
-            'RHAZ',
-            'PANCAM',
-            'MINITES'
-        ]
-
-        const CURIOUSITY_MAX_SOL = 3400
-        const OPPORTUNITY_MAX_SOL = 4500
-
-        const rovers = {
-          curiosity: {
-            cameras: curiosityCameras,
-            maxSol: CURIOUSITY_MAX_SOL
-          },
-        //   opportunity: {
-        //     cameras: opportunityCameras,
-        //     maxSol: OPPORTUNITY_MAX_SOL
-        //   },
-        }
-
-         // Select a random rover
-         const roverNames = Object.keys(rovers);
-         const randomRover = roverNames[Math.floor(Math.random() * roverNames.length)];
-         const selectedRover = rovers[randomRover as keyof typeof rovers];
-
-         // Get random camera for selected rover
-         const randomCamera = selectedRover.cameras[Math.floor(Math.random() * selectedRover.cameras.length)];
-
-         // Get random sol (Martian day) within rover's max
-         const randomSol = Math.floor(Math.random() * selectedRover.maxSol) + 1;
-
-         const requestURL = `https://api.nasa.gov/mars-photos/api/v1/rovers/${randomRover}/photos?sol=${randomSol}&camera=${randomCamera}&api_key=${apiKey}`
-         console.log('requestURL::::::: ', requestURL)
-         const response = await fetch(requestURL);
-         const data = await response.json();
-
-         if (data.photos.length) {
-            const returnObj = {
-                photo: data.photos[0].img_src,
-                sol: randomSol,
-                camera: randomCamera,
-                rover: randomRover
-            }
-            return returnObj
-        } else if (attempts < maxAttempts) {
-            return fetchMarsPhotos(apiKey, attempts + 1, maxAttempts)
-        } else {
-            throw new Error('No photos found after maximum attempts')
-        }
-    } catch (err) {
-        console.log("error fetch mar rover photos ...", err)
-    }
-}

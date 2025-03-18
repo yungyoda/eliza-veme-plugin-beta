@@ -1,18 +1,22 @@
 import { ActionExample } from "@elizaos/core";
 
-export const getMarsRoverExamples: ActionExample[][] = [
+export const vemeExamples: ActionExample[][] = [
     [
         {
             user: "{{user1}}",
             content: {
-                text: "I wonder what mars looks like today?",
+                text: "Can you create a funny veme about AI?",
             },
         },
         {
             user: "{{agent}}",
             content: {
-                text: "Let me fetch a picture from a mars rover.",
-                action: "NASA_GET_MARS_ROVER_PHOTO",
+                text: "I'll create a funny veme about AI taking over the world!",
+                action: "CREATE_VEME",
+                parameters: {
+                    userPrompt: "Create a funny veme about AI taking over the world",
+                    emotion: "funny"
+                }
             },
         }
     ],
@@ -20,32 +24,18 @@ export const getMarsRoverExamples: ActionExample[][] = [
         {
             user: "{{user1}}",
             content: {
-                text: "Can you fetch a random picture of Mars?",
+                text: "I need some motivation today",
             },
         },
         {
             user: "{{agent}}",
             content: {
-                text: "Let me fetch a picture from a mars rover.",
-                action: "NASA_GET_MARS_ROVER_PHOTO",
-            },
-        }
-    ],
-]
-
-export const getAPODExamples: ActionExample[][] = [
-    [
-        {
-            user: "{{user1}}",
-            content: {
-                text: "What's the nasa Astronomy picture of the day?",
-            },
-        },
-        {
-            user: "{{agent}}",
-            content: {
-                text: "Let me get the nasa image of the day.",
-                action: "NASA_GET_APOD",
+                text: "Let me create an inspiring veme to lift your spirits!",
+                action: "CREATE_VEME",
+                parameters: {
+                    userPrompt: "Create a motivational veme about never giving up",
+                    emotion: "motivational"
+                }
             },
         }
     ],
@@ -53,95 +43,18 @@ export const getAPODExamples: ActionExample[][] = [
         {
             user: "{{user1}}",
             content: {
-                text: "I love space.",
+                text: "Can you create a dramatic veme about climate change?",
             },
         },
         {
             user: "{{agent}}",
             content: {
-                text: "Oh really, then let me get the nasa image of the day to make your day even better.",
-                action: "NASA_GET_APOD",
-            },
-        }
-    ],
-    [
-        {
-            user: "{{user1}}",
-            content: {
-                text: "I am in love with space and space travel.",
-            },
-        },
-        {
-            user: "{{agent}}",
-            content: {
-                text: "Space is beautiful, dark, scary, and vast. Would you like to see a current photo of space from NASA?",
-            },
-        },
-        {
-            user: "{{user1}}",
-            content: {
-                text: "yes",
-            },
-        },
-        {
-            user: "{{agent}}",
-            content: {
-                text: "Here is the NASA Astronomy Picture of the Day.",
-                action: "NASA_GET_APOD",
-            },
-        }
-    ],
-    [
-        {
-            user: "{{user1}}",
-            content: {
-                text: "Space is beautiful, dark, scary, and unfathomably vast.",
-            },
-        },
-        {
-            user: "{{agent}}",
-            content: {
-                text: "Indeed! Would you like to see a current photo from the NASA astronomy database?",
-            },
-        },
-        {
-            user: "{{user1}}",
-            content: {
-                text: "yes",
-            },
-        },
-        {
-            user: "{{agent}}",
-            content: {
-                text: "Here is the NASA Astronomy Picture of the Day.",
-                action: "NASA_GET_APOD",
-            },
-        }
-    ],
-    [
-        {
-            user: "{{user1}}",
-            content: {
-                text: "I'm a big fan of space and astronomy.",
-            },
-        },
-        {
-            user: "{{agent}}",
-            content: {
-                text: "Would you like to see the Nasa Astronomy Picture of the Day?",
-            },
-        },
-        {
-            user: "{{user1}}",
-            content: {
-                text: "yes",
-            },
-        },
-        {
-            user: "{{agent}}",
-            content: {
-                text: "Here is the NASA Astronomy Picture of the Day.",
-                action: "NASA_GET_APOD",
+                text: "I'll create a dramatic veme to raise awareness about climate change.",
+                action: "CREATE_VEME",
+                parameters: {
+                    userPrompt: "Create a dramatic veme about climate change",
+                    emotion: "dramatic"
+                }
             },
         }
     ]
